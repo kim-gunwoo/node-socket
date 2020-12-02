@@ -13,10 +13,24 @@ io.sockets.on("connection", function (socket) {
     console.log("user disconnected: ", socket.id);
   });
 
-  socket.on("send", function (name, text) {
-    const msg = name + " : " + text;
-    console.log(msg);
-    io.emit("receive", msg);
+  socket.on("leaveRoom", (room, name) => {
+    socket.leave(room, () => {
+      console.log(name + " leave a " + room);
+      io.to(room).emit("leaveRoom", room, name);
+    });
+  });
+
+  socket.on("joinRoom", (room, name) => {
+    socket.join(room, () => {
+      console.log(name + " join a " + room);
+      io.to(room).emit("joinRoom", room, name);
+    });
+  });
+
+  socket.on("send", (room, name, text) => {
+    const msg = `${name} : ${text} `;
+
+    io.to(room).emit("receive", msg);
   });
 });
 
